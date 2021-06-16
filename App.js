@@ -1,39 +1,59 @@
 import { StatusBar } from 'expo-status-bar';
 import React, {useState} from 'react';
-import { StyleSheet, Text, View, Button, TextInput } from 'react-native';
+import { StyleSheet, Text, View, Button, TextInput, FlatList, Alert, TouchableWithoutFeedback, Keyboard } from 'react-native';
+import Header from "./components/Header"
+import TodoItem from "./components/TodoItem"
+import AddTodo from "./components/AddTodo"
 
 export default function App() {
+  const [todos,setTodos] = useState([
+    {text: "buy a coffee", key:1},
+    {text: "take the trash", key:2},
+    {text: "go to grocery", key:3}
+  ])
 
-  const [name,setName] = useState("Ruslan")
-  const [nameInput,setNameInput] = useState("")
-  const [ageInput,setAgeInput] = useState(0)
-  const [person,setPerson] = useState({name: "Ramile", age: 28})
+  const pressHandler = (key) => {
+    setTodos(prevTodos => {
+      return prevTodos.filter(todo => todo.key != key);
+    });
+  };
 
-  
-  const updateState = () => {
-    setName("Ramile");
-    setPerson({name: "Ruslan", age: 27});
-  }
+  const submitHandler = (text) => {
+    if(text.length > 3){
+      setTodos(prevTodos => {
+        return [
+          { text, key: Math.random().toString() },
+          ...prevTodos
+        ];
+      });
+    } else {
+      Alert.alert('OOPS', 'Todo must be over 3 characters long', [
+        {text: 'Understood', onPress: () => console.log('alert closed') }
+      ]);
+    }
+  };
+
 
   return (
+    <TouchableWithoutFeedback onPress={() => {
+      Keyboard.dismiss();
+    }}>
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.boldText}>Hello {name}</Text> 
-        <Text style={styles.boldText}>Name: {person.name}, Age: {person.age}</Text> 
+      <Header />
+      <View style={styles.content}>
+        <AddTodo submitHandler={submitHandler} />
+        <View style={styles.list}>
+          <FlatList
+            data={todos}
+            renderItem={({item}) => (
+              <TodoItem item={item} pressHandler={pressHandler} />
+            )}
+          />
+        </View>
       </View>
-      <View style={styles.body}>
-        <Button onPress={() => updateState()} title="Update State" />
-      </View>
-      <View style={styles.header2}>
-        <Text style={styles.boldText}>Name: {nameInput}</Text> 
-        <Text style={styles.boldText}>Age: {ageInput}</Text> 
-      </View>
-      <View>
-        <TextInput style={styles.textInput} onChangeText={(val) => setNameInput(val)} placeholder="e.g. John" />
-        <TextInput keyboardType="numeric" style={styles.textInput}  onChangeText={(val) => setAgeInput(val)} placeholder="e.g. 25" />
-      </View>
-      <StatusBar style="auto" />
+      <StatusBar  />
     </View>
+    </TouchableWithoutFeedback>
   );
 }
 
@@ -41,28 +61,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
   },
-  header: {
-    backgroundColor:"yellow",
-    padding: 20,
+  content : {
+    padding: 40
   },
-  header2: {
-    backgroundColor:"pink",
-    padding: 20,
-  },
-  boldText: {
-    fontSize: 20,
-    fontWeight: "bold",
-  },
-  body: {
-    padding: 20,
-    backgroundColor: "green"
-  },
-  textInput: {
-    borderWidth: 1,
-    borderColor: 'red',
-    padding:10,
+  list: {
+    marginTop: 20
   }
 });
